@@ -1,3 +1,5 @@
+require("dotenv").config(); // Load .env variables for local development
+
 const express = require("express");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
@@ -6,13 +8,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = process.env.PORT || 3000;  // ✅ Use Render's assigned port
+const PORT = process.env.PORT || 3000; // Use Render's assigned port
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "vsrvsrvit@gmail.com", 
-        pass: "dkhzzgjrxlgeyfpu", 
+        user: process.env.EMAIL_USER,  // ✅ Fetch from environment variable
+        pass: process.env.EMAIL_PASS,  // ✅ Fetch from environment variable
     },
 });
 
@@ -20,14 +22,14 @@ app.post("/send-email", async (req, res) => {
     const { email, name, phone, subject, message } = req.body;
 
     const mailOptionsToAdmin = {
-        from: "vsrvsrvit@gmail.com",
-        to: "vsrvsrvit@gmail.com", 
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // Admin email
         subject: `New Contact Form Submission: ${subject}`,
         text: `You have a new message from ${name}.\n\nEmail: ${email}\nPhone: ${phone}\nMessage: ${message}`,
     };
 
     const mailOptionsToUser = {
-        from: "vsrvsrvit@gmail.com",
+        from: process.env.EMAIL_USER,
         to: email, 
         subject: "Thank You for Contacting Us!",
         text: `Hello ${name},\n\nThank you for reaching out! We have received your message:\n\n"${message}"\n\nWe will get back to you soon!\n\nBest Regards,\nYour Company`,
@@ -43,4 +45,4 @@ app.post("/send-email", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));  // ✅ Correct port binding
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
