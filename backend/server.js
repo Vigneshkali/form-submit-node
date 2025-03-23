@@ -7,22 +7,23 @@ const path = require("path");
 const app = express();
 app.use(express.json());
 
-// ✅ Allow CORS for all origins (fixes mobile request issue)
+// ✅ Allow CORS for all devices (Fixes mobile issue)
 const corsOptions = {
-    origin: "*", 
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    allowedHeaders: "Content-Type,Authorization"
+    origin: "*",  
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+    credentials: true
 };
 app.use(cors(corsOptions));
 
 // ✅ Serve static files (index.html, CSS, JS)
-app.use(express.static(path.join(__dirname, ".."))); 
+app.use(express.static(path.join(__dirname, "..", "public"))); 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // ✅ Default route → Serve index.html
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "index.html"));
+    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
 // ✅ Email Setup
