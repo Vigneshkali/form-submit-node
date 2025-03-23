@@ -6,16 +6,23 @@ const path = require("path");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
 
-// ✅ Serve the index.html from the root directory
+// ✅ Allow CORS for all origins (fixes mobile request issue)
+const corsOptions = {
+    origin: "*", 
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: "Content-Type,Authorization"
+};
+app.use(cors(corsOptions));
+
+// ✅ Serve static files (index.html, CSS, JS)
 app.use(express.static(path.join(__dirname, ".."))); 
 
 const PORT = process.env.PORT || 3000;
 
 // ✅ Default route → Serve index.html
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "index.html")); 
+    res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
 // ✅ Email Setup
@@ -30,6 +37,10 @@ const transporter = nodemailer.createTransport({
 // ✅ Handle form submission
 app.post("/send-email", async (req, res) => {
     const { email, name, phone, subject, message } = req.body;
+
+    if (!email || !name || !phone || !subject || !message) {
+        return res.status(400).json({ message: "❌ All fields are required!" });
+    }
 
     const mailOptionsToAdmin = {
         from: process.env.EMAIL_USER,
@@ -50,7 +61,7 @@ app.post("/send-email", async (req, res) => {
         await transporter.sendMail(mailOptionsToUser);
         res.json({ message: "✅ Emails sent successfully!" });
     } catch (error) {
-        console.error(error);
+        console.error("Email Sending Error:", error);
         res.status(500).json({ message: "❌ Error sending emails", error });
     }
 });
