@@ -1,41 +1,46 @@
-require("dotenv").config(); // Load environment variables from .env file
+require("dotenv").config({ path: __dirname + "/.env" }); // Load .env from backend/
 const express = require("express");
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const PORT = process.env.PORT || 3000; // Use Render's assigned port
+// ✅ Serve the index.html from the root directory
+app.use(express.static(path.join(__dirname, ".."))); 
 
-// Default route to check if the server is running
+const PORT = process.env.PORT || 3000;
+
+// ✅ Default route → Serve index.html
 app.get("/", (req, res) => {
-    res.send("✅ Server is running! Use /send-email to send an email.");
+    res.sendFile(path.join(__dirname, "..", "index.html")); 
 });
 
-// Configure Nodemailer with environment variables
+// ✅ Email Setup
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: process.env.EMAIL_USER, // Get email from .env
-        pass: process.env.EMAIL_PASS, // Get password from .env
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
     },
 });
 
+// ✅ Handle form submission
 app.post("/send-email", async (req, res) => {
     const { email, name, phone, subject, message } = req.body;
 
     const mailOptionsToAdmin = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // Admin's email
+        to: process.env.EMAIL_USER,
         subject: `New Contact Form Submission: ${subject}`,
         text: `You have a new message from ${name}.\n\nEmail: ${email}\nPhone: ${phone}\nMessage: ${message}`,
     };
 
     const mailOptionsToUser = {
         from: process.env.EMAIL_USER,
-        to: email, // User's email
+        to: email,
         subject: "Thank You for Contacting Us!",
         text: `Hello ${name},\n\nThank you for reaching out! We have received your message:\n\n"${message}"\n\nWe will get back to you soon!\n\nBest Regards,\nYour Company`,
     };
@@ -50,5 +55,5 @@ app.post("/send-email", async (req, res) => {
     }
 });
 
-// Start the server
+// ✅ Start the server
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
